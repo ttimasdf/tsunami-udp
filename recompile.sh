@@ -8,6 +8,7 @@ rm -f */Makefile.in
 rm -rf */.deps
 rm -rf autom4te.cache
 rm -rf m4
+mkdir m4
 
 echo "Runing libtoolize..."
 libtoolize --force || glibtoolize --force  # workaround for GNU tools naming on macOS
