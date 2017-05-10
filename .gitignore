@@ -7,6 +7,14 @@ Makefile.in
 autom4te.cache/
 m4/
 ltmain.sh
+aclocal.m4
+compile
+config.*
+depcomp
+install-sh
+missing
+stamp-h1
+tsunami.spec
 
 # Prerequisites
 *.d
