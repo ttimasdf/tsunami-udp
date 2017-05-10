@@ -141,12 +141,12 @@ u_int64_t get_usec_since(struct timeval *old_time)
 
 
 /*------------------------------------------------------------------------
- * u_int64_t htonll(u_int64_t value);
+ * u_int64_t t_htonll(u_int64_t value);
  *
  * Converts the given 64-bit value in host byte order to network byte
  * order and returns it.
  *------------------------------------------------------------------------*/
-u_int64_t htonll(u_int64_t value)
+u_int64_t t_htonll(u_int64_t value)
 {
     static int necessary = -1;
 
@@ -186,14 +186,14 @@ char *make_transcript_filename(char *buffer, time_t epoch, const char *extension
 
 
 /*------------------------------------------------------------------------
- * u_int64_t ntohll(u_int64_t value);
+ * u_int64_t t_ntohll(u_int64_t value);
  *
  * Converts the given 64-bit value in network byte order to host byte
  * order and returns it.
  *------------------------------------------------------------------------*/
-u_int64_t ntohll(u_int64_t value)
+u_int64_t t_ntohll(u_int64_t value)
 {
-    return htonll(value);
+    return t_htonll(value);
 }
 
 
@@ -241,7 +241,7 @@ int read_line(int fd, char *buffer, size_t buffer_length)
        if (read(fd, buffer + buffer_offset, 1) <= 0)
           return warn("Could not read complete line of input");
        buffer_offset++;
-    } while ( (buffer[buffer_offset-1] != '\0') && (buffer[buffer_offset-1] != '\n') 
+    } while ( (buffer[buffer_offset-1] != '\0') && (buffer[buffer_offset-1] != '\n')
               && (buffer_offset < buffer_length) );
 
     /* terminate the string and return */
@@ -265,7 +265,7 @@ int fread_line(FILE *f, char *buffer, size_t buffer_length)
        if (fread(buffer + buffer_offset, sizeof(char), 1, f) <= 0)
           return warn("Could not read complete line of input");
        buffer_offset++;
-    } while ( (buffer[buffer_offset-1] != '\0') && (buffer[buffer_offset-1] != '\n') 
+    } while ( (buffer[buffer_offset-1] != '\0') && (buffer[buffer_offset-1] != '\n')
               && (buffer_offset < buffer_length) );
 
     /* terminate the string and return */
@@ -304,10 +304,10 @@ void usleep_that_works(u_int64_t usec)
 /*------------------------------------------------------------------------
  * u_int64_t get_udp_in_errors();
  *
- * Tries to return the current value of the UDP Input Error counter 
+ * Tries to return the current value of the UDP Input Error counter
  * that might be available in /proc/net/snmp
  *------------------------------------------------------------------------*/
-u_int64_t get_udp_in_errors() 
+u_int64_t get_udp_in_errors()
 {
     FILE* f = NULL;
     u_int64_t errs = 0;
@@ -333,7 +333,7 @@ u_int64_t get_udp_in_errors()
             for (i=0; (i<3) && (p!=NULL) && (p < buf+len-1); i++, p++)  {
                 p = strchr(p, ' ');
             }
-            if ((p != NULL) && (p < buf+len-1)) { 
+            if ((p != NULL) && (p < buf+len-1)) {
                 errs = atol(p--);
             } else {
                 errs = 0;

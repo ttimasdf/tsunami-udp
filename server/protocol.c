@@ -161,7 +161,7 @@ int ttp_accept_retransmit(ttp_session_t *session, retransmission_t *retransmissi
             sprintf(g_error, "Could not build retransmission for block %u", retransmission->block);
             return warn(g_error);
         }
-      
+
         /* try to send out the block */
         status = sendto(xfer->udp_fd, datagram, 6 + param->block_size, 0, xfer->udp_address, xfer->udp_length);
         if (status < 0) {
@@ -302,21 +302,21 @@ int ttp_open_port(ttp_session_t *session)
 
       struct addrinfo *result;
       char errmsg[256];
- 
+
       int status = getaddrinfo(session->parameter->client, NULL, NULL, &result);
-      if (status) {     
+      if (status) {
          sprintf(errmsg, "error in getaddrinfo: %s\n", gai_strerror(status));
          error(errmsg);
          return EXIT_FAILURE;
-      }   
+      }
 
       /* Just use the first result */
-      if (result->ai_family==AF_INET6) 
+      if (result->ai_family==AF_INET6)
          ipv6_yn = 1;
       else
          ipv6_yn = 0;
       session->parameter->ipv6_yn = ipv6_yn;
-      
+
       session->transfer.udp_length = result->ai_addrlen;
       address = (struct sockaddr *) malloc(result->ai_addrlen);
       if (address == NULL)
@@ -414,10 +414,10 @@ int ttp_open_transfer(ttp_session_t *session)
         return warn("File list sent!");
 
     } else if(!strcmp(filename,"*")) {
-      
+
         if(param->allhook != 0)
         {
-           /* execute the provided program on server side to see what files 
+           /* execute the provided program on server side to see what files
             * should be gotten
             */
 			const int MaxFileListLength = 32768;
@@ -491,7 +491,7 @@ int ttp_open_transfer(ttp_session_t *session)
 
         } else {
 
-           /* A multiple file request - sent the file names first, 
+           /* A multiple file request - sent the file names first,
             * and next the client requests a download of each in turn (get * command)
             */
             memset(size, 0, sizeof(size));
@@ -560,17 +560,17 @@ int ttp_open_transfer(ttp_session_t *session)
     /* get time multiplexing info from EVN filename (currently these are all unused) */
     if (get_aux_entry("sl",ef->auxinfo, ef->nr_auxinfo) == 0)
       param->totalslots= 1;          /* default to 1 */
-    else 
+    else
       sscanf(get_aux_entry("sl",ef->auxinfo, ef->nr_auxinfo), "%d", &(param->totalslots));
 
     if (get_aux_entry("sn",ef->auxinfo, ef->nr_auxinfo) == 0)
       param->slotnumber= 1;          /* default to 1 */
-    else 
+    else
       sscanf(get_aux_entry("sn",ef->auxinfo, ef->nr_auxinfo), "%d", &param->slotnumber);
 
     if (get_aux_entry("sr",ef->auxinfo, ef->nr_auxinfo) == 0)
       param->samplerate= 512;          /* default to 512 Msamples/s */
-    else 
+    else
       sscanf(get_aux_entry("sr",ef->auxinfo, ef->nr_auxinfo), "%d", &param->samplerate);
 
     /* try to open the vsib for reading */
@@ -664,7 +664,7 @@ int ttp_open_transfer(ttp_session_t *session)
     param->epoch       = time(NULL);
 
     /* reply with the length, block size, number of blocks, and run epoch */
-    file_size   = htonll(param->file_size);    if (full_write(session->client_fd, &file_size,   8) < 0) return warn("Could not submit file size");
+    file_size   = t_htonll(param->file_size);    if (full_write(session->client_fd, &file_size,   8) < 0) return warn("Could not submit file size");
     block_size  = htonl (param->block_size);   if (full_write(session->client_fd, &block_size,  4) < 0) return warn("Could not submit block size");
     block_count = htonl (param->block_count);  if (full_write(session->client_fd, &block_count, 4) < 0) return warn("Could not submit block count");
     epoch       = htonl (param->epoch);        if (full_write(session->client_fd, &epoch,       4) < 0) return warn("Could not submit run epoch");
@@ -672,7 +672,7 @@ int ttp_open_transfer(ttp_session_t *session)
     /*calculate and convert RTT to u_sec*/
     session->parameter->wait_u_sec=(ping_e.tv_sec - ping_s.tv_sec)*1000000+(ping_e.tv_usec-ping_s.tv_usec);
     /*add a 10% safety margin*/
-    session->parameter->wait_u_sec = session->parameter->wait_u_sec + ((int)(session->parameter->wait_u_sec* 0.1));  
+    session->parameter->wait_u_sec = session->parameter->wait_u_sec + ((int)(session->parameter->wait_u_sec* 0.1));
 
     /* and store the inter-packet delay */
     param->ipd_time   = (u_int32_t) ((1000000LL * 8 * param->block_size) / param->target_rate);

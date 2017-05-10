@@ -209,7 +209,7 @@ int ttp_open_transfer(ttp_session_t *session, const char *remote_filename, const
     xfer->local_filename  = local_filename;
 
     /* read in the file length, block size, block count, and run epoch */
-    if (fread(&xfer->file_size,   8, 1, session->server) < 1) return warn("Could not read file size");         xfer->file_size   = ntohll(xfer->file_size);
+    if (fread(&xfer->file_size,   8, 1, session->server) < 1) return warn("Could not read file size");         xfer->file_size   = t_ntohll(xfer->file_size);
     if (fread(&temp,              4, 1, session->server) < 1) return warn("Could not read block size");        if (htonl(temp) != param->block_size) return warn("Block size disagreement");
     if (fread(&xfer->block_count, 4, 1, session->server) < 1) return warn("Could not read number of blocks");  xfer->block_count = ntohl (xfer->block_count);
     if (fread(&xfer->epoch,       4, 1, session->server) < 1) return warn("Could not read run epoch");         xfer->epoch       = ntohl (xfer->epoch);
@@ -219,7 +219,7 @@ int ttp_open_transfer(ttp_session_t *session, const char *remote_filename, const
 
     /* try to open the local file for writing */
     if (!access(xfer->local_filename, F_OK))
-        printf("Warning: overwriting existing file '%s'\n", local_filename);     
+        printf("Warning: overwriting existing file '%s'\n", local_filename);
     xfer->file = fopen(xfer->local_filename, "wb");
     if (xfer->file == NULL) {
         char * trimmed = rindex(xfer->local_filename, '/');
@@ -227,7 +227,7 @@ int ttp_open_transfer(ttp_session_t *session, const char *remote_filename, const
            printf("Warning: could not open file %s for writing, trying local directory instead.\n", xfer->local_filename);
            xfer->local_filename = trimmed + 1;
            if (!access(xfer->local_filename, F_OK))
-              printf("Warning: overwriting existing file '%s'\n", xfer->local_filename);     
+              printf("Warning: overwriting existing file '%s'\n", xfer->local_filename);
            xfer->file = fopen(xfer->local_filename, "wb");
         }
         if(xfer->file == NULL) {
@@ -240,9 +240,9 @@ int ttp_open_transfer(ttp_session_t *session, const char *remote_filename, const
     xfer->vsib = fopen("/dev/vsib", "wb");
     if (xfer->vsib == NULL)
     return warn("VSIB board does not exist in /dev/vsib or it cannot be read");
-    
-    /* pre-reserve the ring buffer */  
-    param->ringbuf = malloc(param->block_size * RINGBUF_BLOCKS); 
+
+    /* pre-reserve the ring buffer */
+    param->ringbuf = malloc(param->block_size * RINGBUF_BLOCKS);
     if (param->ringbuf == NULL)
     return warn("Could not reserve space for ring buffer");
     #endif
@@ -463,7 +463,7 @@ int ttp_request_retransmit(ttp_session_t *session, u_int32_t block)
 
    #else
 
-   /* 
+   /*
     * Store the request via "insertion sort"
     * this maintains a sequentially sorted table and discards duplicate requests,
     * and does not flood the net with so many unnecessary retransmissions like old Tsunami did
@@ -473,16 +473,16 @@ int ttp_request_retransmit(ttp_session_t *session, u_int32_t block)
 
    /* seek to insertion point or end - could use binary search here... */
    while ((idx < rexmit->index_max) && (rexmit->table[idx] < block)) {
-     idx++; 
+     idx++;
    }
 
    /* insert the entry */
-   if (idx == rexmit->index_max) { 
+   if (idx == rexmit->index_max) {
       rexmit->table[rexmit->index_max] = block;
       rexmit->index_max++;
-   } else if (rexmit->table[idx] == block) { 
+   } else if (rexmit->table[idx] == block) {
       // fprintf(stderr, "duplicate retransmit req for block %d discarded\n", block);
-   } else { 
+   } else {
       /* insert and shift remaining table upwards - linked list could be nice... */
       tmp32_ins = block;
       do {
@@ -520,12 +520,12 @@ int ttp_request_stop(ttp_session_t *session)
     status = fwrite(&retransmission, sizeof(retransmission), 1, session->server);
     if ((status <= 0) || fflush(session->server))
        return warn("Could not request end of transmission");
-    
+
     #ifdef VSIB_REALTIME
     /* Wait until ring buffer is empty, then stop vsib and free buffer memory*/
     stop_vsib(session);
     free(session->parameter->ringbuf);
-    session->parameter->ringbuf = NULL; /* it is no more... */ 
+    session->parameter->ringbuf = NULL; /* it is no more... */
     #endif
 
     /* we succeeded */
@@ -552,7 +552,7 @@ int ttp_update_stats(ttp_session_t *session)
     double            data_total;                             /* the total amount of data transferred (bytes)   */
     double            data_total_rate;
     double            data_this;                              /* the amount of data since last stat time        */
-    double            data_this_rexmit;                       /* the amount of data in received retransmissions */ 
+    double            data_this_rexmit;                       /* the amount of data in received retransmissions */
     double            data_this_goodpt;                       /* the amount of data as non-lost packets         */
     double            retransmits_fraction;                   /* how many retransmit requests there were vs received blocks */
     double            total_retransmits_fraction;
@@ -596,7 +596,7 @@ int ttp_update_stats(ttp_session_t *session)
 
     /* update the rate statistics */
     // incoming transmit rate R = goodput R (Mbit/s) + retransmit R (Mbit/s)
-    stats->this_transmit_rate   = 8.0 * data_this        / (d_seconds * u_mega); 
+    stats->this_transmit_rate   = 8.0 * data_this        / (d_seconds * u_mega);
     stats->this_retransmit_rate = 8.0 * data_this_rexmit / (d_seconds * u_mega);
     data_total_rate             = 8.0 * data_total       / (d_seconds_total * u_mega);
 
@@ -608,7 +608,7 @@ int ttp_update_stats(ttp_session_t *session)
 
     // IIR filtered composite error and loss, some sort of knee function
     stats->error_rate = fb * stats->error_rate + ff * 500*100 * (retransmits_fraction + ringfill_fraction);
-        
+
     /* send the current error rate information to the server */
     memset(&retransmission, 0, sizeof(retransmission));
     retransmission.request_type = htons(REQUEST_ERROR_RATE);
@@ -617,7 +617,7 @@ int ttp_update_stats(ttp_session_t *session)
     if ((status <= 0) || fflush(session->server))
         return warn("Could not send error rate information");
 
-    /* build the stats string */    
+    /* build the stats string */
     #ifdef STATS_MATLABFORMAT
     sprintf(stats_line, "%02d\t%02d\t%02d\t%03d\t%4u\t%6.2f\t%6.1f\t%5.1f\t%7u\t%6.1f\t%6.1f\t%5.1f\t%5d\t%5d\t%7u\t%8u\t%8Lu\n",
     #else
@@ -634,7 +634,7 @@ int ttp_update_stats(ttp_session_t *session)
         100.0 * total_retransmits_fraction,
         session->transfer.retransmit.index_max,
         session->transfer.ring_buffer->count_data,
-        session->transfer.blocks_left, 
+        session->transfer.blocks_left,
         stats->this_retransmits,
         (ull_t)(stats->this_udp_errors - stats->start_udp_errors)
         );

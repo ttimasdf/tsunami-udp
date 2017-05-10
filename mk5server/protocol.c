@@ -100,7 +100,7 @@ int ttp_accept_retransmit(ttp_session_t *session, retransmission_t *retransmissi
     static char      stats_line[80];
     int              status;
     u_int16_t        type;
-  
+
     /* convert the retransmission fields to host byte order */
     retransmission->block      = ntohl(retransmission->block);
     retransmission->error_rate = ntohl(retransmission->error_rate);
@@ -153,7 +153,7 @@ int ttp_accept_retransmit(ttp_session_t *session, retransmission_t *retransmissi
             sprintf(g_error, "Could not build retransmission for block %u", retransmission->block);
             return warn(g_error);
         }
-      
+
         /* try to send out the block */
         status = sendto(xfer->udp_fd, datagram, 6 + param->block_size, 0, xfer->udp_address, xfer->udp_length);
         if (status < 0) {
@@ -340,7 +340,7 @@ int ttp_open_transfer(ttp_session_t *session)
     int i,j;
     char file_no[10];
     struct timeval ping_s, ping_e;
-    
+
     /* clear out the transfer data */
     memset(xfer, 0, sizeof(*xfer));
 
@@ -355,37 +355,37 @@ int ttp_open_transfer(ttp_session_t *session)
      *sent the file names and then proceed to transfer
      */
     if(!strcmp(filename,"*"))
-    {  
+    {
        sprintf(size,"%d",param->file_name_size);
        printf("\nServer side file size: %s\n", size);
-       
-       write(session->client_fd,size,10);       
-       
+
+       write(session->client_fd,size,10);
+
        sprintf(file_no,"%d",param->total_files);
-       printf("\nServer side file no: %s\n", file_no);       
-       
-       write(session->client_fd,file_no,10);       
-       
+       printf("\nServer side file no: %s\n", file_no);
+
+       write(session->client_fd,file_no,10);
+
        printf("\nFile sizes sent to client\n");
        read(session->client_fd,message,8);
-       
+
        printf("Got message back:\"%s\"\n",message);
-       
+
        for(i=0,j=0;i<param->file_name_size;i+=strlen(param->file_names[j])+1,j++)
           write(session->client_fd,param->file_names[j],strlen(param->file_names[j])+1);
-       
-       
+
+
        /*write(session->client_fd,testing, sizeof(testing));*/
        read(session->client_fd,message,8);
-       printf("Got back :%s\n", message);       
-       
+       printf("Got back :%s\n", message);
+
        status = read_line(session->client_fd, filename, MAX_FILENAME_LENGTH);
        printf("file name requested: %s", filename);
        /*error("I am stuck\n");*/
        if (status < 0)
           error("Could not read filename from client");
-    }/*end of multimode session*/    
-    
+    }/*end of multimode session*/
+
     /* store the filename in the transfer object */
     xfer->filename = strdup(filename);
     if (xfer->filename == NULL)
@@ -406,10 +406,10 @@ int ttp_open_transfer(ttp_session_t *session)
         }
         return warn(g_error);
     }
-    
+
     /* begin round trip time estimation */
     gettimeofday(&ping_s,NULL);
-    
+
     /* try to signal success to the client */
     status = write(session->client_fd, "\000", 1);
     if (status < 0)
@@ -422,7 +422,7 @@ int ttp_open_transfer(ttp_session_t *session)
 
     /* end round trip time estimation */
     gettimeofday(&ping_e,NULL);
-    
+
     /* read in the slowdown and speedup factors */
     if (read(session->client_fd, &param->slower_num,  2) < 0) return warn("Could not read slowdown numerator");    param->slower_num  = ntohs(param->slower_num);
     if (read(session->client_fd, &param->slower_den,  2) < 0) return warn("Could not read slowdown denominator");  param->slower_den  = ntohs(param->slower_den);
@@ -432,12 +432,12 @@ int ttp_open_transfer(ttp_session_t *session)
     /* try to find the file statistics */
     // fseeko64(xfer->file, 0, SEEK_END); param->file_size(xfer->file);
     param->file_size   = 60LL * 512000000LL * 4LL / 8; // ftello64(xfer->file);
-    
+
     param->block_count = (param->file_size / param->block_size) + ((param->file_size % param->block_size) != 0);
     param->epoch       = time(NULL);
 
     /* reply with the length, block size, number of blocks, and run epoch */
-    file_size   = htonll(param->file_size);    if (write(session->client_fd, &file_size,   8) < 0) return warn("Could not submit file size");
+    file_size   = t_htonll(param->file_size);    if (write(session->client_fd, &file_size,   8) < 0) return warn("Could not submit file size");
     block_size  = htonl (param->block_size);   if (write(session->client_fd, &block_size,  4) < 0) return warn("Could not submit block size");
     block_count = htonl (param->block_count);  if (write(session->client_fd, &block_count, 4) < 0) return warn("Could not submit block count");
     epoch       = htonl (param->epoch);        if (write(session->client_fd, &epoch,       4) < 0) return warn("Could not submit run epoch");
@@ -445,8 +445,8 @@ int ttp_open_transfer(ttp_session_t *session)
     /*calculate and convert RTT to u_sec*/
     session->parameter->wait_u_sec=(ping_e.tv_sec - ping_s.tv_sec)*1000000+(ping_e.tv_usec-ping_s.tv_usec);
     /*add a 10% safety margin*/
-    session->parameter->wait_u_sec = session->parameter->wait_u_sec + ((int)(session->parameter->wait_u_sec* 0.1));  
-    
+    session->parameter->wait_u_sec = session->parameter->wait_u_sec + ((int)(session->parameter->wait_u_sec* 0.1));
+
     /* and store the inter-packet delay */
     param->ipd_time   = (u_int32_t) ((1000000LL * 8 * param->block_size) / param->target_rate);
     xfer->ipd_current = param->ipd_time * 3;
