@@ -7,10 +7,15 @@ Tsunami UDP Protocol is A fast user-space file transfer protocol that uses TCP c
 Includes FTP-like client and server command line applications for normal file transfers. It has additionally been extended for high rate real-time data streaming in eVLBI radio astronomy and geodesy (VSIB, PCEVN DAQ). Licensed under the original IU open source license.
 
 
+# Usage
 
+```sh
+make
+```
+That's all you'll need.
 
-# Original README below
-------------------------------------------------------------------------
+ORIGINAL README.txt
+========================================================================
 
 NOTE: below is the original unmodified 2002 README, it does not fully
 reflect the current status... ;-) After reading this file, also see
