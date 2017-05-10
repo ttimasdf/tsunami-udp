@@ -22,7 +22,7 @@
  * Changed C++ 'struct timeval& atv's into normal C pointers.
  *
  * Revision 1.4  2002/11/03 09:46:44  amn
- * Auto£og entry was still slightly wrong, corrected to ' *'.
+ * AutoÂ£og entry was still slightly wrong, corrected to ' *'.
  *
  * Revision 1.3  2002/11/03 09:45:17  amn
  * Changed tstamp.cc to be only C, so that it can become tstamp.c.
