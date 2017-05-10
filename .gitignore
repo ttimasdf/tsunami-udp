@@ -6,6 +6,7 @@ Makefile.in
 */.deps/
 autom4te.cache/
 m4/
+ltmain.sh
 
 # Prerequisites
 *.d
