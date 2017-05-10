@@ -10,7 +10,7 @@ rm -rf autom4te.cache
 rm -rf m4
 
 echo "Runing libtoolize..."
-libtoolize --force
+libtoolize --force || glibtoolize --force
 echo "Running autoreconf..."
 autoreconf -i -f -s
 #echo "Running aclocal..."
