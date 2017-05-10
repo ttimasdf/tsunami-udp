@@ -1,9 +1,22 @@
+# Tsunami UDP Protocol
+
+This is an unofficial port of Tsunami UDP Protocol, tuned a little bit for compiling correctly on macOS, stay compatible with Linux and Win. Original website: http://tsunami-udp.sourceforge.net
+
+Tsunami UDP Protocol is A fast user-space file transfer protocol that uses TCP control and UDP data for transfer over very high speed long distance networks (≥ 1 Gbps and even 10 GE), designed to provide more throughput than possible with TCP over the same networks. The project is based on original Indiana University 2002 Tsunami source code, but has been significantly improved and extended. As such, large portions of the program today are courtesy by Aalto University Metsähovi Radio Observatory.
+
+Includes FTP-like client and server command line applications for normal file transfers. It has additionally been extended for high rate real-time data streaming in eVLBI radio astronomy and geodesy (VSIB, PCEVN DAQ). Licensed under the original IU open source license.
+
+
+
+
+# Original README below
+------------------------------------------------------------------------
 
 NOTE: below is the original unmodified 2002 README, it does not fully
 reflect the current status... ;-) After reading this file, also see
 the COMPILING.txt and USAGE.txt files for newer instructions.
 
-========================================================================
+------------------------------------------------------------------------
 
 NOTE:
 
@@ -42,56 +55,56 @@ the mailing list home page at:
 
   http://listserv.indiana.edu/archives/tsunami-l.html
 
-========================================================================
+------------------------------------------------------------------------
 
 The Tsunami protocol
 --------------------
 
 A basic Tsunami conversation works like this:
 
-(1) The client connects to the Tsunamid TCP port (46224 by default).
+1. The client connects to the Tsunamid TCP port (46224 by default).
     The server forks off a child process to deal with the connection.
 
-(2) The client and server exchange protocol revision numbers to make
+2. The client and server exchange protocol revision numbers to make
     sure that they're talking the same language.  (The revision number
     is defined in "tsunami.h".)
 
-(3) The client authenticates to the server.  This process is described
+3. The client authenticates to the server.  This process is described
     later in this file.
 
-(4) The server is now waiting for the name of a file to transfer to
+4. The server is now waiting for the name of a file to transfer to
     the client.
 
-(5) Once the file name is received, the server makes sure that it
+5. Once the file name is received, the server makes sure that it
     can open and read the file.  If it can, a positive result byte
     is sent to the client.  If it can't, the server reports failure.
 
-(6) The client and server exchange protocol parameter information.
+6. The client and server exchange protocol parameter information.
 
-(7) The client sends the server the number of the UDP port on which
+7. The client sends the server the number of the UDP port on which
     the client will listen for the file data.
 
-(8) The server and client both enter their file transmission loops.
+8. The server and client both enter their file transmission loops.
 
-========================================================================
+------------------------------------------------------------------------
 
 The server file transmission loop
 ---------------------------------
 
 while the whole file hasn't been sent yet:
-    see if the client has sent a request over the TCP pipe (*)
+    see if the client has sent a request over the TCP pipe <sup>(*)</sup>
     if it has:
         service that request
     otherwise:
 	send the next block in the file
     delay for the next packet
 
-(*) There are three kinds of request:
-      (1) error rate notification
-      (2) retransfer block [nn]
-      (3) restart transfer at block [nn]
+(\*) There are three kinds of request:
+1. error rate notification
+2. retransfer block [nn]
+3. restart transfer at block [nn]
 
-========================================================================
+------------------------------------------------------------------------
 
 The client file transmission loop
 ---------------------------------
@@ -113,7 +126,7 @@ while the whole file hasn't been received yet:
         if the block is earlier than the one we were expecting:
             remove the block from the retransmission queue
 
-========================================================================
+------------------------------------------------------------------------
 
 The retransmission queue
 ------------------------
@@ -128,7 +141,7 @@ If the queue is extremely large (over [threshold] entries), instead of
 asking for each entry in the queue, we ask to restart the transfer at
 the first block in the queue.
 
-========================================================================
+------------------------------------------------------------------------
 
 How Tsunami does authentication
 -------------------------------
@@ -142,48 +155,48 @@ with echo turned off.
 The following sequence allows the client to prove its knowledge of the
 shared secret to the server:
 
-(1) The server reads 512 bits of random data from /dev/random and
+1. The server reads 512 bits of random data from /dev/random and
     sends this data to the client.
 
-(2) The client XORs copies of the shared secret over the random data.
+2. The client XORs copies of the shared secret over the random data.
 
-(3) The client sends an MD5 hash of the resulting buffer back to the
+3. The client sends an MD5 hash of the resulting buffer back to the
     server.
 
-(4) The server performs the same XOR/MD5 operation on the random data
+4. The server performs the same XOR/MD5 operation on the random data
     and checks to make sure that they match.  If they do, a positive
     result byte is sent to the client.  If they don't, the connection
     is closed.
 
-========================================================================
+------------------------------------------------------------------------
 
 Other notes
 -----------
 
-(1) Everything is endian-independent except for the MD5 code.
+1. Everything is endian-independent except for the MD5 code.
 
-(2) Everything does work okay with 64-bit file sizes, using the
+2. Everything does work okay with 64-bit file sizes, using the
     fopen64() / fseeko64() API.
 
-(3) Porting from Linux shouldn't be hard.  The OS-dependent bits are
+3. Porting from Linux shouldn't be hard.  The OS-dependent bits are
     the use of /dev/random and the fixed-size data types defined in
     <sys/types.h>.  Linux uses "u_int32_t", Solaris uses "uint32_t".
     That sort of thing.  Solaris also lacks getopt_long() found in
     glibc.
 
-(4) This probably does require gcc to build.  I use the GNU "long long"
+4. This probably does require gcc to build.  I use the GNU "long long"
     datatype quite a bit for manipulating 64-bit values.
 
-(5) The tuning in response to the current error rate is still under
+5. The tuning in response to the current error rate is still under
     active research and development.  Future releases may change this
     code significantly.
 
-(6) Disk-to-disk on the same box is a bad test platform.  The
+6. Disk-to-disk on the same box is a bad test platform.  The
     scheduling daemon and the behavior of the loopback device make
     everything go to hell.
 
-(7) The client has a limited amount of online help.  Use 'help' to
+7. The client has a limited amount of online help.  Use 'help' to
     see it.
 
-(8) The server has a limited amount of usage information.  Run it
+8. The server has a limited amount of usage information.  Run it
     with the '--help' option to see it.
